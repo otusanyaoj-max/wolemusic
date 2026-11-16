@@ -202,7 +202,8 @@ function wmLoading(state) {
     setTimeout(() => !wmReady && wmLoading("slow"), 5000);
   }
   // Pages where it's safe to reload when Wole has changed something since the saved copy.
-  const canReload = /(^\/$|\/(index|shop|product|cart|about|contact)(\.html)?$)/.test(location.pathname);
+  // (Checkout too, as long as the customer hasn't started typing: e.g. payments were just switched on.)
+  const canReload = /(^\/$|\/(index|shop|product|cart|checkout|about|contact)(\.html)?$)/.test(location.pathname);
 
   async function load(attempt) {
     try {
