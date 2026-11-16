@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact us — Wolemusic</title>
+  <meta name="description" content="Contact Wolemusic at OAU, Ile-Ife. Call or WhatsApp us, or visit our shop.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <section class="page-head">
+    <div class="wrap">
+      <div class="crumbs"><a href="index.html">Home</a> / Contact</div>
+      <h1>Contact us</h1>
+      <p>Questions about a product, an order or a bulk purchase? We reply fast on WhatsApp.</p>
+    </div>
+  </section>
+
+  <main class="wrap">
+    <div class="contact-grid">
+      <div>
+        <div class="panel">
+          <h2>Reach us</h2>
+          <ul class="contact-list" id="contact-list"></ul>
+          <div class="contact-map" id="map"></div>
+        </div>
+      </div>
+      <form class="panel" id="form" novalidate>
+        <h2>Send us a message</h2>
+        <p style="color:var(--muted);font-size:.92rem">Your message opens in WhatsApp, ready to send.</p>
+        <div class="form-grid">
+          <div class="field"><label for="name">Your name</label><input id="name" autocomplete="name"><span class="err">Please enter your name.</span></div>
+          <div class="field"><label for="topic">Topic</label>
+            <select id="topic"><option>Product enquiry</option><option>My order</option><option>Bulk / office purchase</option><option>Something else</option></select>
+          </div>
+          <div class="field full"><label for="msg">Message</label><textarea id="msg" placeholder="How can we help?"></textarea><span class="err">Please write a short message.</span></div>
+        </div>
+        <button class="btn btn-wa btn-block" type="submit" id="send"></button>
+      </form>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="catalog.js"></script>
+  <script src="app.js"></script>
+  <script>
+  onReady(() => {
+    renderChrome("Contact");
+    document.getElementById("send").innerHTML = ICONS.wa + " Send on WhatsApp";
+    document.getElementById("map").innerHTML = mapEmbed();
+    document.getElementById("contact-list").innerHTML = [
+      ["wa", "WhatsApp / Call", `<a href="${waLink("Hello Wolemusic")}">${SHOP.phone}</a>`],
+      ["chat", "Email", `<a href="mailto:${SHOP.email}">${SHOP.email}</a>`],
+      ["pin", "Shop address", `<span>${SHOP.address}</span>`],
+      ["clock", "Opening hours", `<span>${SHOP.hours}</span>`],
+    ].map(([i, b, v]) => `<li><span class="ic">${ICONS[i]}</span><div><b>${b}</b>${v}</div></li>`).join("");
+
+    const form = document.getElementById("form");
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("name"), msg = document.getElementById("msg");
+      const badName = name.value.trim().length < 2, badMsg = msg.value.trim().length < 3;
+      name.closest(".field").classList.toggle("invalid", badName);
+      msg.closest(".field").classList.toggle("invalid", badMsg);
+      if (badName || badMsg) return;
+      const text = `Hello Wolemusic, my name is ${name.value.trim()}.\nTopic: ${document.getElementById("topic").value}\n\n${msg.value.trim()}`;
+      window.open(waLink(text), "_blank", "noopener");
+    });
+  });
+  </script>
+</body>
+</html>

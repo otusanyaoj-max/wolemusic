@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About us — Wolemusic</title>
+  <meta name="description" content="Wolemusic sells laptops, gadgets, accessories and office furniture at OAU, Ile-Ife. How to buy, delivery, pickup and returns.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <section class="page-head">
+    <div class="wrap">
+      <div class="crumbs"><a href="index.html">Home</a> / About</div>
+      <h1>About Wolemusic</h1>
+      <p>Your gadget shop at Obafemi Awolowo University, Ile-Ife.</p>
+    </div>
+  </section>
+
+  <main class="wrap">
+    <!-- TODO: replace with Wole's own story (when he started, what he's known for). -->
+    <div class="about-hero">
+      <div>
+        <span class="eyebrow" style="background:#fdeccf;color:#b86a0c">Who we are</span>
+        <h2 style="font-size:clamp(1.6rem,3vw,2.3rem)">Good gadgets at fair prices, close to campus.</h2>
+        <p>Wolemusic helps students, lecturers and workers around OAU get the laptops, gadgets and accessories they need, without the stress of travelling to Lagos or Ibadan.</p>
+        <p>We check every item before it leaves our shop, explain what you're buying in plain words, and stay reachable on WhatsApp after you buy.</p>
+        <a class="btn btn-dark" href="shop.html">Browse the shop</a>
+      </div>
+      <img id="about-img" alt="Laptop, headphones and phone on a desk">
+    </div>
+
+    <div class="info-cards" style="padding-bottom:70px">
+      <div class="info-card" id="how">
+        <span class="ic" data-icon="cart"></span>
+        <h3>How to buy</h3>
+        <ul>
+          <li>Add the items you want to your cart.</li>
+          <li>At checkout, enter your details and choose pickup or delivery.</li>
+          <li>Pay with card, bank transfer or USSD through Paystack.</li>
+          <li>We confirm your order on WhatsApp straight away.</li>
+        </ul>
+      </div>
+      <div class="info-card" id="delivery">
+        <span class="ic" data-icon="truck"></span>
+        <h3>Delivery & pickup</h3>
+        <ul id="delivery-list"></ul>
+      </div>
+      <div class="info-card" id="returns">
+        <span class="ic" data-icon="shield"></span>
+        <h3>Returns & faulty items</h3>
+        <!-- TODO: confirm the return window and terms with Wole. -->
+        <ul>
+          <li>Every item is tested before you collect it.</li>
+          <li>If an item is faulty, contact us within 7 days of purchase.</li>
+          <li>We'll repair, replace or refund faulty items after checking them.</li>
+          <li>Keep your receipt and the original box.</li>
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="catalog.js"></script>
+  <script src="app.js"></script>
+  <script>
+  onReady(() => {
+    renderChrome("About");
+    document.getElementById("about-img").src = photo("1498049794561-7780e7231661", 900);
+    document.querySelectorAll("[data-icon]").forEach((el) => (el.innerHTML = ICONS[el.dataset.icon]));
+    document.getElementById("delivery-list").innerHTML = DELIVERY.map((d) =>
+      `<li><b style="color:var(--ink-2)">${d.name}</b> (${d.fee ? naira(d.fee) : "free"}): ${d.note.toLowerCase()}.</li>`).join("");
+  });
+  </script>
+</body>
+</html>

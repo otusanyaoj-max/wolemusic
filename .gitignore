@@ -1,0 +1,4 @@
+# Website pages only. Secrets live in Render, never here.
+.env
+*.env
+node_modules/

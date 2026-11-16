@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Your order — Wolemusic</title>
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .result { max-width: 640px; margin: 50px auto 80px; text-align: center; }
+    .result .big { width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center; margin: 0 auto 18px; font-size: 2rem; font-weight: 700; }
+    .big.ok { background: #e4f4ea; color: var(--green); }
+    .big.wait { background: #fff6e6; color: var(--amber-deep); }
+    .big.bad { background: #fde7e5; color: #c0342a; }
+    .result .panel { text-align: left; margin-top: 26px; }
+    .ref { font-family: "Sora", sans-serif; background: var(--paper); border: 1px dashed var(--line); padding: 6px 12px; border-radius: 10px; display: inline-block; }
+    .actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 22px; }
+    .spinner { width: 46px; height: 46px; border: 4px solid var(--line); border-top-color: var(--amber); border-radius: 50%; margin: 0 auto 18px; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main class="wrap"><div class="result" id="result">
+    <div class="spinner"></div>
+    <h1 style="font-size:1.6rem">Confirming your payment…</h1>
+    <p style="color:var(--muted)">Please don't close this page.</p>
+  </div></main>
+
+  <div id="site-footer"></div>
+
+  <script src="catalog.js"></script>
+  <script src="app.js"></script>
+  <script>
+  onReady(() => {
+    renderChrome("");
+    const box = document.getElementById("result");
+    const q = new URLSearchParams(location.search);
+    const ref = q.get("reference") || q.get("trxref") || "";
+    let tries = 0;
+
+    function summary(o) {
+      return `<div class="panel">
+        <h2>Order summary</h2>
+        ${o.lines.map((l) => `<div class="sum-line"><span>${l.name} × ${l.qty}</span><span>${naira(l.line)}</span></div>`).join("")}
+        ${o.discount ? `<div class="sum-line discount"><span>Student laptop deal</span><span>− ${naira(o.discount)}</span></div>` : ""}
+        <div class="sum-line"><span>${o.delivery.name}</span><span>${o.delivery.fee ? naira(o.delivery.fee) : "Free"}</span></div>
+        <div class="sum-total"><span>Total</span><span>${naira(o.total)}</span></div>
+      </div>`;
+    }
+
+    function show(o) {
+      const waText = `Hello Wolemusic, I just paid for order ${o.reference} (${naira(o.total)}). ` +
+        (o.delivery.id === "pickup" ? "When can I pick it up?" : "Please confirm my delivery.");
+      if (["paid", "confirmed", "delivered"].includes(o.status)) {
+        Cart.clear();
+        box.innerHTML = `<div class="big ok">✓</div>
+          <h1 style="font-size:1.8rem">Thank you${o.name ? ", " + o.name : ""}! Payment received.</h1>
+          <p style="color:var(--muted)">Your order reference is <span class="ref">${o.reference}</span>. We've been notified and will contact you on WhatsApp shortly.</p>
+          ${summary(o)}
+          <div class="actions">
+            <a class="btn btn-wa" href="${waLink(waText)}">${ICONS.wa} Message us on WhatsApp</a>
+            <a class="btn btn-dark" href="shop.html">Continue shopping</a>
+          </div>`;
+      } else if (o.status === "pending" && tries < 5) {
+        tries++;
+        setTimeout(check, 3000); // bank transfers can take a few seconds to confirm
+      } else if (o.status === "pending") {
+        box.innerHTML = `<div class="big wait">…</div>
+          <h1 style="font-size:1.6rem">We're still waiting for your payment to confirm</h1>
+          <p style="color:var(--muted)">Bank transfers can take a few minutes. Your reference is <span class="ref">${o.reference}</span>. If money has left your account, message us with this reference and we'll sort it out.</p>
+          <div class="actions">
+            <button class="btn btn-dark" onclick="location.reload()">Check again</button>
+            <a class="btn btn-wa" href="${waLink(`Hello Wolemusic, I paid for order ${o.reference} but it's still pending.`)}">${ICONS.wa} Contact us</a>
+          </div>`;
+      } else {
+        box.innerHTML = `<div class="big bad">!</div>
+          <h1 style="font-size:1.6rem">We need to check this payment</h1>
+          <p style="color:var(--muted)">Please contact us with your reference <span class="ref">${o.reference}</span> before you come for pickup.</p>
+          <div class="actions"><a class="btn btn-wa" href="${waLink(`Hello Wolemusic, please check my order ${o.reference}.`)}">${ICONS.wa} Contact us</a></div>`;
+      }
+    }
+
+    function fail(msg) {
+      box.innerHTML = `<div class="big bad">!</div><h1 style="font-size:1.6rem">${msg}</h1>
+        <div class="actions"><a class="btn btn-dark" href="cart.html">Back to cart</a>
+        <a class="btn btn-wa" href="${waLink("Hello Wolemusic, I need help with my order " + ref)}">${ICONS.wa} Contact us</a></div>`;
+    }
+
+    async function check() {
+      try {
+        const res = await fetch(apiUrl(`api/pay/verify?reference=${encodeURIComponent(ref)}`), { cache: "no-store" });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) return fail(data.error || "We couldn't find this order.");
+        show(data.order);
+      } catch {
+        fail("We couldn't reach our server. Please check your connection and refresh.");
+      }
+    }
+
+    if (!/^WM-\d{6}-[A-F0-9]{8}$/.test(ref)) fail("No order reference found.");
+    else check();
+  });
+  </script>
+</body>
+</html>

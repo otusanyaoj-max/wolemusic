@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shop — Wolemusic</title>
+  <meta name="description" content="Shop laptops, tablets, earbuds, headsets, accessories and office chairs from Wolemusic, OAU Ile-Ife. Pay securely online.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <section class="page-head">
+    <div class="wrap">
+      <div class="crumbs"><a href="index.html">Home</a> / Shop</div>
+      <h1>Shop</h1>
+      <p>Laptops, tablets, audio, accessories and office furniture. Pay online, pick up at OAU or get it delivered.</p>
+    </div>
+  </section>
+
+  <main class="wrap" style="padding-bottom:60px">
+    <div class="shop-tools">
+      <div class="chips" id="chips"></div>
+      <div class="tool-right">
+        <label class="search" id="search-box"><input id="q" type="search" placeholder="Search products…" aria-label="Search products"></label>
+        <select class="sort" id="sort" aria-label="Sort products">
+          <option value="featured">Sort: Featured</option>
+          <option value="low">Price: Low to high</option>
+          <option value="high">Price: High to low</option>
+          <option value="name">Name: A – Z</option>
+        </select>
+      </div>
+    </div>
+    <div class="result-count" id="count"></div>
+    <div class="grid" id="products"></div>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="catalog.js"></script>
+  <script src="app.js"></script>
+  <script>
+  onReady(() => {
+    renderChrome("Shop");
+    document.getElementById("search-box").insertAdjacentHTML("afterbegin", ICONS.search);
+
+    const state = {
+      cat: new URLSearchParams(location.search).get("cat") || "all",
+      q: "",
+      sort: "featured",
+    };
+
+    function renderChips() {
+      const all = [{ id: "all", name: "All products" }, ...CATEGORIES];
+      document.getElementById("chips").innerHTML = all.map((c) =>
+        `<button class="chip ${state.cat === c.id ? "active" : ""}" data-cat="${c.id}">${c.name}</button>`).join("");
+    }
+
+    function renderProducts() {
+      const q = state.q.trim().toLowerCase();
+      let list = PRODUCTS.filter((p) =>
+        (state.cat === "all" || p.cat === state.cat) &&
+        (!q || p.name.toLowerCase().includes(q) || catOf(p.cat).name.toLowerCase().includes(q)));
+      if (state.sort === "low") list.sort((a, b) => a.price - b.price);
+      if (state.sort === "high") list.sort((a, b) => b.price - a.price);
+      if (state.sort === "name") list.sort((a, b) => a.name.localeCompare(b.name));
+      if (state.sort === "featured") list.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+
+      document.getElementById("count").textContent = `Showing ${list.length} product${list.length === 1 ? "" : "s"}`;
+      document.getElementById("products").innerHTML = list.length
+        ? list.map(productCard).join("")
+        : `<div class="empty"><b>No products found.</b><br>Try another search, or <a style="color:var(--amber-deep);font-weight:600" href="${waLink("Hello Wolemusic, do you have: " + state.q)}">ask us on WhatsApp</a>.</div>`;
+    }
+
+    document.getElementById("chips").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-cat]");
+      if (!b) return;
+      state.cat = b.dataset.cat;
+      history.replaceState(null, "", state.cat === "all" ? "shop.html" : `shop.html?cat=${state.cat}`);
+      renderChips(); renderProducts();
+    });
+    document.getElementById("q").addEventListener("input", (e) => { state.q = e.target.value; renderProducts(); });
+    document.getElementById("sort").addEventListener("change", (e) => { state.sort = e.target.value; renderProducts(); });
+
+    renderChips(); renderProducts();
+  });
+  </script>
+</body>
+</html>

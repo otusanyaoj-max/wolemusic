@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shop admin — Wolemusic</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { background: #f3efe7; }
+    .a-top { background: var(--ink); color: #fff; position: sticky; top: 0; z-index: 20; }
+    .a-top .wrap { display: flex; align-items: center; gap: 18px; min-height: 64px; flex-wrap: wrap; }
+    .a-top .logo-text { color: #fff; }
+    .a-top .tag { font-size: .75rem; background: var(--amber); color: var(--ink); padding: 2px 8px; border-radius: 99px; font-weight: 700; }
+    .tabs { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap; }
+    .tabs button, .a-link { background: none; border: 0; color: #c9ccd6; font: inherit; font-weight: 600; padding: 8px 14px; border-radius: 99px; cursor: pointer; }
+    .tabs button.on { background: rgba(255,255,255,.12); color: #fff; }
+    .a-link:hover, .tabs button:hover { color: #fff; }
+    main.wrap { padding-top: 26px; padding-bottom: 80px; }
+    .notice { background: #fff6e6; border: 1px solid #f3d29a; color: #7a4d0b; border-radius: 12px; padding: 12px 16px; margin-bottom: 14px; font-size: .92rem; }
+    .notice.bad { background: #fde7e5; border-color: #f2b8b2; color: #8f2a20; }
+    .bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+    .bar h1 { font-size: 1.5rem; margin: 0 auto 0 0; }
+    .bar input, .bar select { height: 42px; border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; font: inherit; background: #fff; }
+    .rows { display: grid; gap: 10px; }
+    .row { display: grid; grid-template-columns: 64px 1fr auto; gap: 14px; align-items: center; background: #fff; border-radius: 14px; padding: 10px 14px 10px 10px; box-shadow: var(--shadow); }
+    .row .th { width: 64px; height: 64px; border-radius: 10px; background: var(--line) center / cover no-repeat; display: grid; place-items: center; color: var(--muted); }
+    .row .th svg { width: 26px; height: 26px; }
+    .row b { display: block; font-family: "Sora", sans-serif; font-size: .98rem; }
+    .row small { color: var(--muted); }
+    .row .acts { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+    .pill { font-size: .75rem; font-weight: 700; padding: 3px 10px; border-radius: 99px; background: #eee; display: inline-block; }
+    .pill.out { background: var(--ink); color: #fff; }
+    .pill.paid, .pill.delivered { background: #e4f4ea; color: var(--green); }
+    .pill.whatsapp, .pill.confirmed { background: #e3f6ec; color: #13703d; }
+    .pill.pending { background: #fff6e6; color: var(--amber-deep); }
+    .pill.review, .pill.cancelled { background: #fde7e5; color: #c0342a; }
+    .btn-ghost { background: #fff; border-color: var(--line); color: var(--ink); }
+    .btn-danger { background: #fff; border-color: #f2b8b2; color: #c0342a; }
+    .switch { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; font-weight: 600; cursor: pointer; user-select: none; }
+    .switch input { width: 18px; height: 18px; accent-color: var(--green); }
+    .empty { text-align: center; color: var(--muted); padding: 50px 0; }
+
+    dialog { border: 0; border-radius: 18px; padding: 0; width: min(760px, calc(100vw - 24px)); max-height: calc(100vh - 24px); box-shadow: 0 30px 80px rgba(0,0,0,.3); }
+    dialog::backdrop { background: rgba(20,22,31,.55); }
+    dialog form { padding: 24px; }
+    dialog h2 { font-size: 1.3rem; }
+    .d-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; flex-wrap: wrap; position: sticky; bottom: -24px; background: #fff; padding: 14px 0 4px; }
+    .hint { font-size: .8rem; color: var(--muted); font-weight: 400; }
+    .checks { display: flex; gap: 22px; flex-wrap: wrap; }
+    .form-err { color: #c0342a; font-weight: 600; margin: 12px 0 0; min-height: 1.2em; }
+
+    .photos { display: flex; gap: 10px; flex-wrap: wrap; }
+    .ph { position: relative; width: 104px; height: 104px; border-radius: 12px; overflow: hidden; background: var(--line) center / cover no-repeat; border: 2px solid transparent; }
+    .ph.main { border-color: var(--amber); }
+    .ph .lbl { position: absolute; left: 6px; bottom: 6px; font-size: .68rem; font-weight: 700; background: var(--amber); color: var(--ink); padding: 1px 6px; border-radius: 99px; }
+    .ph button { position: absolute; top: 6px; width: 26px; height: 26px; border-radius: 50%; border: 0; background: rgba(20,22,31,.75); color: #fff; cursor: pointer; font-size: .9rem; line-height: 1; }
+    .ph .rm { right: 6px; }
+    .ph .mk { left: 6px; }
+    .ph.busy::after { content: "Uploading…"; position: absolute; inset: 0; display: grid; place-items: center; background: rgba(255,255,255,.75); font-size: .8rem; font-weight: 600; }
+    .add-ph { width: 104px; height: 104px; border-radius: 12px; border: 2px dashed #cbbfa9; display: grid; place-items: center; text-align: center; font-size: .8rem; font-weight: 600; color: var(--ink-2); cursor: pointer; background: #fffaf2; }
+    .add-ph input { display: none; }
+
+    .order { background: #fff; border-radius: 14px; padding: 16px 18px; box-shadow: var(--shadow); display: grid; gap: 8px; }
+    .order header { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .order header b { font-family: "Sora", sans-serif; }
+    .order header .when { color: var(--muted); font-size: .85rem; margin-right: auto; }
+    .order ul { margin: 0; padding-left: 18px; }
+    .order .who { font-size: .92rem; color: var(--ink-2); }
+    .order .who a { color: var(--green); font-weight: 600; }
+    .order select { height: 36px; border-radius: 10px; border: 1px solid var(--line); padding: 0 10px; font: inherit; }
+
+    .login { max-width: 400px; margin: 10vh auto; background: #fff; border-radius: 18px; padding: 30px; box-shadow: var(--shadow); }
+    .login h1 { font-size: 1.4rem; }
+    @media (max-width: 640px) {
+      .row { grid-template-columns: 56px 1fr; }
+      .row .th { width: 56px; height: 56px; }
+      .row .acts { grid-column: 1 / -1; justify-content: flex-start; }
+      .tabs { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="a-top"><div class="wrap">
+    <a class="logo" href="index.html"><span class="logo-mark" id="logo-mark"></span><span class="logo-text">WOLE<b>MUSIC</b></span></a>
+    <span class="tag">Admin</span>
+    <nav class="tabs" id="tabs" hidden>
+      <button data-tab="products" class="on">Products</button>
+      <button data-tab="categories">Categories</button>
+      <button data-tab="orders">Orders</button>
+      <a class="a-link" href="index.html" target="_blank" rel="noopener">View shop ↗</a>
+      <button id="logout">Log out</button>
+    </nav>
+  </div></div>
+
+  <main class="wrap" id="app">
+    <p class="empty">Loading…</p>
+  </main>
+
+  <dialog id="dlg"><form method="dialog" id="dlg-form" novalidate></form></dialog>
+
+  <script>window.WM_ADMIN = true;</script>
+  <script src="catalog.js"></script>
+  <script src="app.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

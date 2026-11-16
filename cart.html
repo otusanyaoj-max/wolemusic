@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Your cart — Wolemusic</title>
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <section class="page-head">
+    <div class="wrap">
+      <div class="crumbs"><a href="index.html">Home</a> / Cart</div>
+      <h1>Your cart</h1>
+      <p>Check your items, then continue to secure checkout.</p>
+    </div>
+  </section>
+
+  <main class="wrap" id="cart"></main>
+
+  <div id="site-footer"></div>
+
+  <script src="catalog.js"></script>
+  <script src="app.js"></script>
+  <script>
+  onReady(() => {
+    renderChrome("");
+    const main = document.getElementById("cart");
+
+    function render() {
+      const items = Cart.items();
+      if (!items.length) {
+        main.innerHTML = `<div class="empty-cart">${ICONS.cart}
+          <h2>Your cart is empty</h2>
+          <p style="color:var(--muted)">Browse the shop and add the items you need.</p>
+          <a class="btn btn-dark" href="shop.html">Start shopping</a></div>`;
+        return;
+      }
+      const sub = Cart.subtotal();
+      const disc = dealDiscount(items);
+      main.innerHTML = `
+        <div class="two-col">
+          <div class="panel">
+            <h2>${Cart.count()} item${Cart.count() === 1 ? "" : "s"}</h2>
+            ${items.map(({ p, qty, line }) => `
+              <div class="cart-row">
+                <a href="product.html?id=${p.id}"><img src="${photo(p.img, 200)}" alt="${p.name}"></a>
+                <div class="meta">
+                  <a href="product.html?id=${p.id}">${p.name}</a>
+                  <small>${naira(p.price)} each${qualifiesForDeal(p) ? " · 🎓 student deal applies" : ""}</small>
+                  ${qtyControl("q" + p.id, qty)}
+                </div>
+                <div class="right">
+                  <b>${naira(line)}</b>
+                  <button class="remove" data-remove="${p.id}">Remove</button>
+                </div>
+              </div>`).join("")}
+          </div>
+          <aside class="panel">
+            <h2>Order summary</h2>
+            <div class="sum-line"><span>Subtotal</span><span>${naira(sub)}</span></div>
+            ${disc ? `<div class="sum-line discount"><span>Student laptop deal</span><span>− ${naira(disc)}</span></div>` : ""}
+            <div class="sum-line"><span>Delivery</span><span>Chosen at checkout</span></div>
+            <div class="sum-total"><span>Total</span><span>${naira(sub - disc)}</span></div>
+            <a class="btn btn-primary btn-block" href="checkout.html">${ICONS.lock} Proceed to checkout</a>
+            <div class="secure">${ICONS.shield} Payments secured by Paystack</div>
+            <a class="btn btn-sm" style="width:100%;justify-content:center;margin-top:10px;color:var(--ink-2)" href="shop.html">← Continue shopping</a>
+          </aside>
+        </div>`;
+    }
+
+    main.addEventListener("change", (e) => {
+      if (e.target.matches(".qty input")) {
+        Cart.set(+e.target.id.slice(1), Math.min(99, Math.max(1, +e.target.value || 1)));
+        render();
+      }
+    });
+    main.addEventListener("click", (e) => {
+      const r = e.target.closest("[data-remove]");
+      if (r) { Cart.set(+r.dataset.remove, 0); render(); toast("Item removed"); }
+    });
+    render();
+  });
+  </script>
+</body>
+</html>

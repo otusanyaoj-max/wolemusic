@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wolemusic — Laptops, Gadgets & Accessories at OAU, Ile-Ife</title>
+  <meta name="description" content="Buy laptops, tablets, earbuds, headsets, accessories and ergonomic chairs from Wolemusic, OAU Ile-Ife. Student deals. Pay securely online with Paystack. Pickup or delivery.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <span class="eyebrow">● Now taking orders online</span>
+        <h1>Laptops & gadgets <em>students can afford</em>, right at OAU.</h1>
+        <p class="lead">Laptops, tablets, earbuds, headsets, keyboards and ergonomic chairs at fair prices. Order online, pay securely with card, transfer or USSD, then pick up at our shop or get it delivered.</p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary" href="shop.html" id="cta-shop"></a>
+          <a class="btn btn-ghost" id="cta-wa">Chat with us</a>
+        </div>
+        <div class="hero-stats">
+          <div><strong>₦30k off</strong>Student laptop deal</div>
+          <div><strong>Same day</strong>Pickup at OAU</div>
+          <div><strong>100%</strong>Secure checkout</div>
+        </div>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hv-card hv-photo hv-1" data-photo="1515378791036-0648a3ef77b2"><small>Laptops</small><b>For school & work</b></div>
+        <div class="hv-card hv-photo hv-2" data-photo="1590658268037-6bf12165a8df"><small>Audio</small><b>Earbuds & Headsets</b></div>
+        <div class="hv-card hv-photo hv-3" data-photo="1776548759455-310ef8cd49ec"><small>Office</small><b>Ergonomic Chairs</b></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="trust">
+    <div class="wrap" id="trust"></div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <div><h2>Shop by category</h2><p>Everything for students, creators and offices.</p></div>
+        <a class="link-arrow" href="shop.html">View all products →</a>
+      </div>
+      <div class="cats" id="cats"></div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head">
+        <div><h2>Featured products</h2><p>Popular picks from our shop this week.</p></div>
+        <a class="link-arrow" href="shop.html">See the full shop →</a>
+      </div>
+      <div class="grid" id="featured"></div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="wrap">
+      <div class="deal-banner">
+        <div>
+          <span class="eyebrow" style="background:rgba(20,22,31,.1);color:var(--ink)">🎓 Student laptop deal</span>
+          <h2>Buy any laptop above ₦200k and get ₦30k off.</h2>
+          <p>Our special offer for students. Pick your laptop, pay securely online and collect it at our OAU shop. Limited time only.</p>
+          <a class="btn btn-dark" href="shop.html?cat=laptops">See laptops</a>
+        </div>
+        <div class="deal-photo">
+          <img id="deal-img" alt="Laptop on a desk">
+          <div class="count">
+            <div><b>12</b><small>Hours</small></div>
+            <div><b>45</b><small>Mins</small></div>
+            <div><b>30</b><small>Secs</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head"><div><h2>How to buy</h2><p>Simple, safe and fast.</p></div></div>
+      <div class="steps">
+        <div class="step"><b>Choose your items</b><p>Browse the shop and add what you need to your cart.</p></div>
+        <div class="step"><b>Pay securely</b><p>Pay with card, bank transfer or USSD through Paystack. Your payment is confirmed instantly.</p></div>
+        <div class="step"><b>Pickup or delivery</b><p>Collect from our shop at OAU, or we deliver to you. We'll contact you on WhatsApp.</p></div>
+      </div>
+      <div class="paystack-note" id="ps-note"></div>
+    </div>
+  </section>
+
+  <section class="section" id="contact" style="padding-top:0">
+    <div class="wrap visit" id="about">
+      <div class="visit-info">
+        <h2>Visit our shop</h2>
+        <p>Wolemusic serves students, lecturers, creators and offices in and around Obafemi Awolowo University.</p>
+        <ul class="visit-list" id="visit-list"></ul>
+        <a class="btn btn-wa" id="visit-wa">Chat on WhatsApp</a>
+      </div>
+      <div class="map" id="map"></div>
+    </div>
+  </section>
+
+  <div id="site-footer"></div>
+
+  <script src="catalog.js"></script>
+  <script src="app.js"></script>
+  <script>
+  onReady(() => {
+    renderChrome("Home");
+
+    document.getElementById("cta-shop").innerHTML = ICONS.cart + " Shop now";
+    const ctaWa = document.getElementById("cta-wa");
+    ctaWa.href = waLink("Hello Wolemusic, I want to make an enquiry");
+    ctaWa.innerHTML = ICONS.wa + " Chat with us";
+    document.querySelectorAll("[data-photo]").forEach((el) => {
+      el.style.backgroundImage = `linear-gradient(180deg, rgba(20,22,31,0) 40%, rgba(20,22,31,.85) 100%), url("${photo(el.dataset.photo, 700)}")`;
+    });
+
+    const trust = [
+      ["lock", "Secure payments", "Card, transfer, USSD via Paystack"],
+      ["truck", "Pickup or delivery", "Same-day pickup at OAU"],
+      ["badge", "Quality assured", "Tested before you collect"],
+      ["chat", "WhatsApp support", "Talk to us before you buy"],
+    ];
+    document.getElementById("trust").innerHTML = trust.map(([i, b, s]) =>
+      `<div class="trust-item"><span class="ic">${ICONS[i]}</span><div><b>${b}</b><span>${s}</span></div></div>`).join("");
+
+    document.getElementById("cats").innerHTML = CATEGORIES.map((c) => {
+      const n = PRODUCTS.filter((p) => p.cat === c.id).length;
+      return `<a class="cat" href="shop.html?cat=${c.id}">
+        <span class="cat-img"><img src="${photo(c.img, 600)}" alt="${c.name}" loading="lazy"></span>
+        <b>${c.name}</b><span>${c.blurb} · ${n} items</span></a>`;
+    }).join("");
+
+    document.getElementById("deal-img").src = photo("1541807084-5c52b6b3adef", 700);
+    document.getElementById("featured").innerHTML = PRODUCTS.filter((p) => p.featured).map(productCard).join("");
+
+    document.getElementById("ps-note").innerHTML = ICONS.shield + " Payments are processed by Paystack. We never see or store your card details.";
+
+    document.getElementById("visit-list").innerHTML = [
+      ["pin", "Address", SHOP.address],
+      ["clock", "Opening hours", SHOP.hours],
+      ["phone", "Phone / WhatsApp", SHOP.phone],
+    ].map(([i, b, s]) => `<li>${ICONS[i]}<div><b>${b}</b><span>${s}</span></div></li>`).join("");
+    document.getElementById("map").innerHTML = mapEmbed();
+    const vw = document.getElementById("visit-wa");
+    vw.href = waLink("Hello Wolemusic, I'd like directions to your shop");
+    vw.innerHTML = ICONS.wa + " Chat on WhatsApp";
+  });
+  </script>
+</body>
+</html>

@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Checkout — Wolemusic</title>
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <section class="page-head">
+    <div class="wrap">
+      <div class="crumbs"><a href="index.html">Home</a> / <a href="cart.html">Cart</a> / Checkout</div>
+      <h1>Checkout</h1>
+      <p>Enter your details, choose pickup or delivery, then pay securely.</p>
+    </div>
+  </section>
+
+  <main class="wrap" id="checkout"></main>
+
+  <div id="site-footer"></div>
+
+  <script src="catalog.js"></script>
+  <script src="app.js"></script>
+  <script>
+  onReady(() => {
+    renderChrome("");
+    const main = document.getElementById("checkout");
+    const items = Cart.items();
+    const PAY = CATALOG.payments_enabled === true; // false = orders go to WhatsApp
+
+    if (!items.length) {
+      main.innerHTML = `<div class="empty-cart">${ICONS.cart}<h2>Your cart is empty</h2>
+        <p style="color:var(--muted)">Add items to your cart before checking out.</p>
+        <a class="btn btn-dark" href="shop.html">Go to shop</a></div>`;
+    } else {
+      main.innerHTML = `
+        <form class="two-col" id="form" novalidate>
+          <div>
+            <section class="panel">
+              <h2>1. Your details</h2>
+              <div class="form-grid">
+                <div class="field"><label for="name">Full name</label><input id="name" autocomplete="name" required><span class="err">Please enter your name.</span></div>
+                <div class="field"><label for="phone">Phone / WhatsApp</label><input id="phone" type="tel" autocomplete="tel" placeholder="080..." required><span class="err">Enter a valid Nigerian phone number.</span></div>
+                <div class="field full"><label for="email">${PAY ? "Email (for your payment receipt)" : "Email (optional)"}</label><input id="email" type="email" autocomplete="email" ${PAY ? "required" : ""}><span class="err">Enter a valid email address.</span></div>
+              </div>
+            </section>
+            <section class="panel">
+              <h2>2. Pickup or delivery</h2>
+              <div class="options" id="delivery">
+                ${DELIVERY.map((d, i) => `
+                  <label class="option ${i === 0 ? "selected" : ""}">
+                    <input type="radio" name="delivery" value="${d.id}" ${i === 0 ? "checked" : ""}>
+                    <div><b>${d.name}</b><small>${d.note}</small></div>
+                    <span class="fee">${d.fee ? naira(d.fee) : "Free"}</span>
+                  </label>`).join("")}
+              </div>
+              <div class="form-grid" id="address-box" style="margin-top:14px;display:none">
+                <div class="field full"><label for="address">Delivery address</label><textarea id="address" placeholder="Hall / hostel, room number, street, landmark"></textarea><span class="err">Please enter your delivery address.</span></div>
+              </div>
+              <div class="field full" style="margin-top:14px"><label for="note">Order note (optional)</label><input id="note" placeholder="Anything we should know?"></div>
+            </section>
+          </div>
+          <aside class="panel">
+            <h2>Order summary</h2>
+            ${items.map(({ p, qty, line }) => `<div class="mini-item"><img src="${photo(p.img, 120)}" alt=""><span>${p.name} × ${qty}</span><b>${naira(line)}</b></div>`).join("")}
+            <div style="border-top:1px solid var(--line);margin-top:10px;padding-top:6px" id="sums"></div>
+            <button class="btn ${PAY ? "btn-primary" : "btn-wa"} btn-block" type="submit" id="pay"></button>
+            <div class="secure">${PAY ? `${ICONS.shield} Secured by Paystack. We never see your card details.`
+              : `${ICONS.chat} Your order goes straight to us on WhatsApp. We'll confirm availability and how to pay.`}</div>
+            <div class="notice" id="pay-notice" style="display:none"></div>
+          </aside>
+        </form>`;
+
+      const form = document.getElementById("form");
+      const chosen = () => DELIVERY.find((d) => d.id === form.delivery.value);
+      const totals = () => {
+        const sub = Cart.subtotal(), disc = dealDiscount(items), fee = chosen().fee;
+        return { sub, disc, fee, total: sub - disc + fee };
+      };
+      function updateSums() {
+        const t = totals();
+        document.getElementById("sums").innerHTML = `
+          <div class="sum-line"><span>Subtotal</span><span>${naira(t.sub)}</span></div>
+          ${t.disc ? `<div class="sum-line discount"><span>Student laptop deal</span><span>− ${naira(t.disc)}</span></div>` : ""}
+          <div class="sum-line"><span>${chosen().id === "pickup" ? "Pickup" : "Delivery"}</span><span>${t.fee ? naira(t.fee) : "Free"}</span></div>
+          <div class="sum-total"><span>Total</span><span>${naira(t.total)}</span></div>`;
+        document.getElementById("pay").innerHTML = PAY ? `${ICONS.lock} Pay ${naira(t.total)}` : `${ICONS.wa} Send order on WhatsApp · ${naira(t.total)}`;
+        document.getElementById("address-box").style.display = chosen().id === "pickup" ? "none" : "grid";
+        document.querySelectorAll(".option").forEach((o) => o.classList.toggle("selected", o.querySelector("input").checked));
+      }
+      document.getElementById("delivery").addEventListener("change", updateSums);
+      updateSums();
+
+      const rules = {
+        name: (v) => v.trim().length >= 2,
+        phone: (v) => /^(\+?234|0)[789][01]\d{8}$/.test(v.replace(/[\s-]/g, "")),
+        email: (v) => (!PAY && v.trim() === "") || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()),
+        address: (v) => chosen().id === "pickup" || v.trim().length >= 8,
+      };
+      form.addEventListener("input", (e) => {
+        if (rules[e.target.id] && rules[e.target.id](e.target.value)) e.target.closest(".field").classList.remove("invalid");
+      });
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        let first = null;
+        for (const [id, ok] of Object.entries(rules)) {
+          const el = document.getElementById(id);
+          const bad = !ok(el.value);
+          el.closest(".field").classList.toggle("invalid", bad);
+          if (bad && !first) first = el;
+        }
+        if (first) { first.focus(); return; }
+        if (PAY) startPayment(); else sendWhatsAppOrder();
+      });
+
+      // Builds the full order as a WhatsApp message to Wole.
+      function sendWhatsAppOrder(reason) {
+        const t = totals(), val = (id) => document.getElementById(id).value.trim(), d = chosen();
+        const lines = [
+          "Hello Wolemusic, I'd like to place this order:", "",
+          ...items.map(({ p, qty, line }) => `• ${p.name} × ${qty} = ${naira(line)}`), "",
+          `Subtotal: ${naira(t.sub)}`,
+          ...(t.disc ? [`Student laptop deal: −${naira(t.disc)}`] : []),
+          `${d.name}: ${t.fee ? naira(t.fee) : "Free"}`,
+          `TOTAL: ${naira(t.total)}`, "",
+          `Name: ${val("name")}`, `Phone: ${val("phone")}`,
+          ...(val("email") ? [`Email: ${val("email")}`] : []),
+          ...(d.id !== "pickup" ? [`Delivery address: ${val("address")}`] : []),
+          ...(val("note") ? [`Note: ${val("note")}`] : []),
+        ];
+        const url = waLink(lines.join(String.fromCharCode(10)));
+        // Keep a copy for Wole's admin page (best effort; WhatsApp opens either way).
+        try {
+          fetch(apiUrl("api/orders/whatsapp"), { method: "POST", keepalive: true, headers: { "Content-Type": "text/plain" },
+            body: JSON.stringify({ name: val("name"), phone: val("phone"), email: val("email"), delivery: d.id, address: val("address"),
+              note: val("note"), items: items.map(({ p, qty }) => ({ id: p.id, qty })) }) }).catch(() => {});
+        } catch {}
+        showNotice(reason || "WhatsApp is opening with your order. Just press Send and we'll reply to confirm.");
+        const w = window.open(url, "_blank", "noopener");
+        if (!w) location.href = url; // pop-up blocked (common on phones): go there directly
+      }
+
+      const NO_PAY_MSG = "Online payment isn't available right now, so we've opened WhatsApp with your order instead.";
+      const payBtn = document.getElementById("pay");
+      const notice = document.getElementById("pay-notice");
+      function showNotice(msg) { notice.style.display = msg ? "block" : "none"; notice.textContent = msg || ""; }
+      function busy(on) {
+        payBtn.disabled = on;
+        payBtn.style.opacity = on ? ".6" : "";
+        if (on) payBtn.textContent = "Starting secure payment…"; else updateSums();
+      }
+
+      // Paystack's popup script; if it can't load we fall back to Paystack's own payment page.
+      function loadPaystack() {
+        return new Promise((resolve) => {
+          if (window.PaystackPop) return resolve(true);
+          const s = document.createElement("script");
+          s.src = window.WM_PAYSTACK_JS || "https://js.paystack.co/v2/inline.js"; // override used only by the local test server
+          s.onload = () => resolve(!!window.PaystackPop);
+          s.onerror = () => resolve(false);
+          document.head.appendChild(s);
+        });
+      }
+
+      async function startPayment() {
+        showNotice("");
+        busy(true);
+        try {
+          const val = (id) => document.getElementById(id).value;
+          const res = await fetch(apiUrl("api/pay/init"), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: val("name"), phone: val("phone"), email: val("email"),
+              delivery: form.delivery.value, address: val("address"), note: val("note"),
+              items: Cart.items().map(({ p, qty }) => ({ id: p.id, qty })),
+            }),
+          });
+          const data = await res.json().catch(() => ({}));
+          // No payment server (e.g. static hosting returns 404/405/501 or a non-JSON page) → WhatsApp instead.
+          if (!("ok" in data)) { busy(false); return sendWhatsAppOrder(NO_PAY_MSG); }
+          if (!res.ok || !data.ok) throw new Error(data.error || "We could not start the payment. Please try again.");
+
+          const done = () => (location.href = `order.html?reference=${encodeURIComponent(data.reference)}`);
+          if (await loadPaystack()) {
+            new PaystackPop().resumeTransaction(data.access_code, {
+              onSuccess: done,
+              onCancel: () => { busy(false); showNotice("Payment was cancelled. You can try again when you're ready."); },
+              onError: () => { if (data.authorization_url) location.href = data.authorization_url; },
+            });
+          } else if (data.authorization_url) {
+            location.href = data.authorization_url; // Paystack sends them back to order.html
+          } else {
+            throw new Error("Could not open the payment window. Please refresh and try again.");
+          }
+        } catch (err) {
+          busy(false);
+          if (err instanceof TypeError) return sendWhatsAppOrder(NO_PAY_MSG); // network error reaching the payment server
+          showNotice(err.message || "Something went wrong. Please try again.");
+        }
+      }
+    }
+  });
+  </script>
+</body>
+</html>

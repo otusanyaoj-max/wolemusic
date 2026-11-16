@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Product — Wolemusic</title>
+  <meta name="description" content="Product details from Wolemusic, OAU Ile-Ife. Pay securely online with Paystack.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main class="wrap" id="product"></main>
+
+  <section class="section" style="padding-top:0" id="related-wrap">
+    <div class="wrap">
+      <div class="section-head">
+        <div><h2>You may also like</h2></div>
+        <a class="link-arrow" id="related-link" href="shop.html">See more →</a>
+      </div>
+      <div class="grid" id="related"></div>
+    </div>
+  </section>
+
+  <div id="site-footer"></div>
+
+  <script src="catalog.js"></script>
+  <script src="app.js"></script>
+  <script>
+  onReady(() => {
+    renderChrome("Shop");
+    const id = +new URLSearchParams(location.search).get("id");
+    const p = PRODUCTS.find((x) => x.id === id);
+    const main = document.getElementById("product");
+
+    if (!p) {
+      main.innerHTML = `<div class="not-found"><h1>Product not found</h1>
+        <p style="color:var(--muted)">This item may have sold out or been removed.</p>
+        <a class="btn btn-dark" href="shop.html">Back to shop</a></div>`;
+      document.getElementById("related-wrap").remove();
+    } else {
+      const c = catOf(p.cat);
+      const [lead, feats] = DETAILS[p.id] || ["", []];
+      document.title = `${p.name} — Wolemusic`;
+      const tagClass = p.tag === "Awoof deal" || p.tag === "Student deal" ? "badge deal" : "badge";
+      const save = p.old ? Math.round((1 - p.price / p.old) * 100) : 0;
+
+      main.innerHTML = `
+        <div class="crumbs" style="padding-top:28px;color:var(--muted)">
+          <a href="index.html" style="color:var(--amber-deep)">Home</a> /
+          <a href="shop.html?cat=${c.id}" style="color:var(--amber-deep)">${c.name}</a> / ${p.name}
+        </div>
+        <div class="pd">
+          <div class="pd-photo">
+            <img id="pd-main" src="${photo(p.img, 1000)}" alt="${p.name}">
+            ${!inStock(p) ? `<span class="badge soldout">Sold out</span>` : p.tag ? `<span class="${tagClass}">${p.tag}</span>` : ""}
+            ${(p.images || []).length > 1 ? `<div class="pd-thumbs">${p.images.map((im, i) => `<button type="button" class="${i ? "" : "on"}" data-img="${photo(im, 1000)}" aria-label="Photo ${i + 1}"><img src="${photo(im, 160)}" alt=""></button>`).join("")}</div>` : ""}
+          </div>
+          <div>
+            <span class="card-cat">${c.name}</span>
+            <h1>${p.name}</h1>
+            <div class="price-row">
+              <span class="price">${naira(p.price)}</span>
+              ${p.old ? `<span class="old-price">${naira(p.old)}</span><span class="save">Save ${save}%</span>` : ""}
+            </div>
+            <p class="pd-lead">${lead}</p>
+            ${qualifiesForDeal(p) ? `<p class="deal-note">🎓 <b>Student laptop deal:</b> ₦30,000 comes off this laptop at checkout.</p>` : ""}
+            <ul class="features">${feats.map((f) => `<li>${f}</li>`).join("")}</ul>
+            ${inStock(p) ? `<div class="buy-row">
+              ${qtyControl("qty", 1)}
+              <button class="btn btn-dark" data-add="${p.id}" data-qty-from="#qty">${ICONS.cart} Add to cart</button>
+              <button class="btn btn-primary" id="buy-now">Buy now</button>
+            </div>` : `<p class="deal-note"><b>Sold out.</b> Message us on WhatsApp and we'll tell you when it's back.</p>`}
+            <a class="btn btn-wa" style="margin-top:12px" href="${waLink(`Hello Wolemusic, is "${p.name}" (${naira(p.price)}) available?`)}">${ICONS.wa} Ask on WhatsApp</a>
+            <div class="pd-perks">
+              <div>${ICONS.lock} Pay securely with card, bank transfer or USSD (Paystack)</div>
+              <div>${ICONS.truck} Pickup at our OAU shop, or delivery in Ile-Ife and Osun State</div>
+              <div>${ICONS.shield} Tested before you collect it</div>
+            </div>
+          </div>
+        </div>`;
+
+      document.querySelectorAll(".pd-thumbs button").forEach((b) => b.addEventListener("click", () => {
+        document.getElementById("pd-main").src = b.dataset.img;
+        document.querySelectorAll(".pd-thumbs button").forEach((x) => x.classList.toggle("on", x === b));
+      }));
+      document.getElementById("buy-now")?.addEventListener("click", () => {
+        Cart.add(p.id, Math.max(1, +document.getElementById("qty").value || 1));
+        location.href = "checkout.html";
+      });
+
+      const related = PRODUCTS.filter((x) => x.cat === p.cat && x.id !== p.id).slice(0, 4);
+      const fill = related.length < 4 ? PRODUCTS.filter((x) => x.cat !== p.cat && x.featured).slice(0, 4 - related.length) : [];
+      document.getElementById("related").innerHTML = [...related, ...fill].map(productCard).join("");
+      document.getElementById("related-link").href = `shop.html?cat=${c.id}`;
+    }
+  });
+  </script>
+</body>
+</html>
